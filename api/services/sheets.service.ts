@@ -1,3 +1,4 @@
+import moment from "moment-timezone";
 import { google, sheets_v4 } from "googleapis";
 import { Order } from "../models/order.model";
 
@@ -26,7 +27,9 @@ export class SheetsService {
         item.quantity,
         item.title,
         order.notes,
-        order.created_at,
+        moment(order.created_at)
+          .tz("America/Chicago")
+          .format("MM/DD/YYYY HH:mm:ss"),
       ];
       data.push(row);
     }

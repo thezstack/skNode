@@ -8,8 +8,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SheetsService = void 0;
+const moment_timezone_1 = __importDefault(require("moment-timezone"));
 const googleapis_1 = require("googleapis");
 class SheetsService {
     addOrder(order) {
@@ -29,7 +33,9 @@ class SheetsService {
                     item.quantity,
                     item.title,
                     order.notes,
-                    order.created_at,
+                    (0, moment_timezone_1.default)(order.created_at)
+                        .tz("America/Chicago")
+                        .format("MM/DD/YYYY HH:mm:ss"),
                 ];
                 data.push(row);
             }
