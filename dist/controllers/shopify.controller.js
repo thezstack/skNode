@@ -31,6 +31,18 @@ router.get("/products", (req, res) => __awaiter(void 0, void 0, void 0, function
             .json({ message: "An error occurred while fetching products" });
     }
 }));
+router.get("/orders", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const orders = yield shopifyService.fetchOrders();
+        res.json(orders);
+    }
+    catch (error) {
+        console.error(error);
+        res
+            .status(500)
+            .json({ message: "An error occurred while fetching products" });
+    }
+}));
 router.post("/webhooks/orders/create", express_1.default.json(), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const order = req.body;
     // Do something with the order...

@@ -24,8 +24,26 @@ class ShopifyService {
                 "X-Shopify-Access-Token": process.env.SHOP_ACCESS_TOKEN,
             };
             try {
+                console.log(process.env.GOOGLE_CLIENT_EMAIL);
                 const response = yield axios_1.default.get(url, { headers });
                 return response.data.products;
+            }
+            catch (error) {
+                console.error(error);
+                throw error;
+            }
+        });
+    }
+    fetchOrders() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const url = `${process.env.SHOP_URL}/admin/api/2023-04/orders.json?status=any`;
+            const headers = {
+                "Content-Type": "application/json",
+                "X-Shopify-Access-Token": process.env.SHOP_ACCESS_TOKEN,
+            };
+            try {
+                const response = yield axios_1.default.get(url, { headers });
+                return response.data.orders;
             }
             catch (error) {
                 console.error(error);

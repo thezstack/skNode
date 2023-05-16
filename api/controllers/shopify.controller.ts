@@ -1,7 +1,7 @@
 import express from "express";
 import { ShopifyService } from "../services/shopify.service";
 import { Order } from "../models/order.model";
-import { SheetsController } from "./sheets.controller.ts";
+import { SheetsController } from "./sheets.controller";
 
 const router = express.Router();
 const shopifyService = new ShopifyService();
@@ -10,6 +10,18 @@ router.get("/products", async (req, res) => {
   try {
     const products: Order[] = await shopifyService.fetchProducts();
     res.json(products);
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ message: "An error occurred while fetching products" });
+  }
+});
+
+router.get("/orders", async (req, res) => {
+  try {
+    const orders: Order[] = await shopifyService.fetchOrders();
+    res.json(orders);
   } catch (error) {
     console.error(error);
     res
@@ -30,11 +42,9 @@ router.post("/webhooks/orders/create", express.json(), async (req, res) => {
     res.status(200).end();
   } catch (error) {
     console.error(error);
-    res
-      .status(500)
-      .json({
-        message: "An error occurred while adding order to Google Sheets",
-      });
+    res.status(500).json({
+      message: "An error occurred while adding order to Google Sheets",
+    });
   }
 });
 

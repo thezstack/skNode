@@ -1,11 +1,8 @@
 interface LineItem {
   id: number;
-  variant_id: number;
   title: string;
   quantity: number;
   price: string;
-  sku: string;
-  vendor: string;
 }
 
 interface Customer {
@@ -23,4 +20,7 @@ export interface Order {
   total_price: string;
   customer: Customer;
   order_number: number;
+  current_total_price: number;
+  notes:string;
+
 }
