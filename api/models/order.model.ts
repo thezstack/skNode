@@ -1,11 +1,11 @@
-interface LineItem {
+export interface LineItem {
   id: number;
   title: string;
   quantity: number;
   price: string;
 }
 
-interface Customer {
+export interface Customer {
   id: number;
   email: string;
   first_name: string;
@@ -20,7 +20,5 @@ export interface Order {
   total_price: string;
   customer: Customer;
   order_number: number;
-  current_total_price: number;
-  notes:string;
-
+  notes: string;
 }

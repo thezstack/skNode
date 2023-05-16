@@ -1,6 +1,6 @@
 import express from "express";
 import { ShopifyService } from "../services/shopify.service";
-import { Order } from "../models/order.model";
+import { Order, LineItem, Customer } from "../models/order.model";
 import { SheetsController } from "./sheets.controller";
 
 const router = express.Router();
@@ -31,8 +31,30 @@ router.get("/orders", async (req, res) => {
 });
 
 router.post("/webhooks/orders/create", express.json(), async (req, res) => {
-  const order: Order = req.body;
-
+  const order: Order = {
+    id: req.body.id,
+    email: req.body.email,
+    created_at: req.body.created_at,
+    line_items: req.body.line_items.map(
+      (item: any) =>
+        ({
+          id: item.id,
+          title: item.title,
+          quantity: item.quantity,
+          price: item.price,
+        } as LineItem)
+    ),
+    total_price: req.body.total_price,
+    customer: {
+      id: req.body.customer.id,
+      email: req.body.customer.email,
+      first_name: req.body.customer.first_name,
+      last_name: req.body.customer.last_name,
+    },
+    order_number: req.body.order_number,
+    notes: req.body.note,
+  };
+  //const order: Order = req.body;
   // Do something with the order...
   console.log(order);
 

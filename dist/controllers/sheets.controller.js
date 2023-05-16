@@ -35,7 +35,6 @@ router.get("/read-sheet", (req, res) => __awaiter(void 0, void 0, void 0, functi
 class SheetsController {
     static addOrderToSheet(order) {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log("inside SheetsControlle");
             return sheetsService.addOrder(order);
         });
     }

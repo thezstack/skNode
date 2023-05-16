@@ -16,25 +16,19 @@ export class SheetsService {
     const range = "Dump"; // This should be the name of your sheet
 
     // Prepare the data
-    const values = [
-      [
-        order.id,
-        order.email,
-        order.created_at,
-        order.total_price,
+    const data = [];
+    for (const item of order.line_items) {
+      const row = [
         order.order_number,
-        order.current_total_price,
-        order.notes,
-        order.customer.id,
-        order.customer.email,
         order.customer.first_name,
         order.customer.last_name,
-      ],
-    ];
-
-    // For each line item, add a new row
-    for (const item of order.line_items) {
-      values.push([item.id, item.title, item.quantity, item.price]);
+        order.customer.email,
+        item.quantity,
+        item.title,
+        order.notes,
+        order.created_at,
+      ];
+      data.push(row);
     }
 
     try {
@@ -43,7 +37,7 @@ export class SheetsService {
         range,
         valueInputOption: "USER_ENTERED",
         insertDataOption: "INSERT_ROWS",
-        requestBody: { values },
+        requestBody: { values: data },
       });
       console.log(response);
     } catch (error) {

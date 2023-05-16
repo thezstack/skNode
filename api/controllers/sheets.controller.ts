@@ -23,7 +23,6 @@ router.get("/read-sheet", async (req, res) => {
 
 export class SheetsController {
   static async addOrderToSheet(order: Order) {
-    console.log("inside SheetsControlle");
     return sheetsService.addOrder(order);
   }
 }
