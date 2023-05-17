@@ -22,7 +22,18 @@ const shopifyService = new shopify_service_1.ShopifyService();
 router.get("/products", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const products = yield shopifyService.fetchProducts();
-        res.json(products);
+        try {
+            yield sheets_controller_1.SheetsController.addProducts(products);
+            // Respond to Shopify to acknowledge receipt of the webhook
+            res.status(200).end();
+        }
+        catch (error) {
+            console.error(error);
+            res.status(500).json({
+                message: "An error occurred while adding order to Google Sheets",
+            });
+        }
+        //  res.json(products);
     }
     catch (error) {
         console.error(error);

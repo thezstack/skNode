@@ -38,6 +38,11 @@ class SheetsController {
             return sheetsService.addOrder(order);
         });
     }
+    static addProducts(product) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return sheetsService.addProduct(product);
+        });
+    }
 }
 exports.SheetsController = SheetsController;
 //# sourceMappingURL=sheets.controller.js.map

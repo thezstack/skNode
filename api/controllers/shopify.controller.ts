@@ -1,6 +1,7 @@
 import express from "express";
 import { ShopifyService } from "../services/shopify.service";
 import { Order, LineItem, Customer } from "../models/order.model";
+import { Product } from "../models/product.model";
 import { SheetsController } from "./sheets.controller";
 
 const router = express.Router();
@@ -8,8 +9,18 @@ const shopifyService = new ShopifyService();
 
 router.get("/products", async (req, res) => {
   try {
-    const products: Order[] = await shopifyService.fetchProducts();
-    res.json(products);
+    const products: Product[] = await shopifyService.fetchProducts();
+    try {
+      await SheetsController.addProducts(products);
+      // Respond to Shopify to acknowledge receipt of the webhook
+      res.status(200).end();
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({
+        message: "An error occurred while adding order to Google Sheets",
+      });
+    }
+    //  res.json(products);
   } catch (error) {
     console.error(error);
     res

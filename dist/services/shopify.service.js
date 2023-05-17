@@ -18,13 +18,22 @@ class ShopifyService {
     // ...other methods...
     fetchProducts() {
         return __awaiter(this, void 0, void 0, function* () {
-            const url = `${process.env.SHOP_URL}/admin/api/2023-04/products.json`;
+            const fields = [
+                "id",
+                "title",
+                "product_type",
+                "body_html",
+                "created_at",
+                "updated_at",
+                "status",
+                "variants",
+            ].join(",");
+            const url = `${process.env.SHOP_URL}/admin/api/2023-04/products.json?fields=${fields}&status=draft`;
             const headers = {
                 "Content-Type": "application/json",
                 "X-Shopify-Access-Token": process.env.SHOP_ACCESS_TOKEN,
             };
             try {
-                console.log(process.env.GOOGLE_CLIENT_EMAIL);
                 const response = yield axios_1.default.get(url, { headers });
                 return response.data.products;
             }

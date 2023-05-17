@@ -1,3 +1,4 @@
+import { Product } from "../models/product.model";
 import { Order } from "../models/order.model";
 import { SheetsService } from "../services/sheets.service";
 
@@ -24,6 +25,10 @@ router.get("/read-sheet", async (req, res) => {
 export class SheetsController {
   static async addOrderToSheet(order: Order) {
     return sheetsService.addOrder(order);
+  }
+
+  static async addProducts(product: Product[]) {
+    return sheetsService.addProduct(product);
   }
 }
 
