@@ -47,6 +47,7 @@ class SheetsService {
                     (0, moment_timezone_1.default)(order.created_at)
                         .tz("America/Chicago")
                         .format("MM/DD/YYYY HH:mm:ss"),
+                    item.id,
                 ];
                 data.push(row);
             }

@@ -39,6 +39,7 @@ export class SheetsService {
         moment(order.created_at)
           .tz("America/Chicago")
           .format("MM/DD/YYYY HH:mm:ss"),
+        item.id,
       ];
       data.push(row);
     }
