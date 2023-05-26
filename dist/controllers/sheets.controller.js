@@ -32,6 +32,20 @@ router.get("/read-sheet", (req, res) => __awaiter(void 0, void 0, void 0, functi
             .json({ message: "An error occurred while reading from Google Sheets" });
     }
 }));
+router.get("/build-products", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const spreadsheetId = "12cMgbvqVqMbifb5SqsTqvABobGQ5M9wHfhN-fEgmo7o"; // Replace with your Spreadsheet ID
+        const range = "Ilm Academy Master!A:P"; // Update this to your specific range
+        const data = yield sheetsService.processSpreadsheet(range, spreadsheetId);
+        res.json(data);
+    }
+    catch (error) {
+        console.error(error);
+        res
+            .status(500)
+            .json({ message: "An error occurred while reading from Google Sheets" });
+    }
+}));
 class SheetsController {
     static addOrderToSheet(order) {
         return __awaiter(this, void 0, void 0, function* () {

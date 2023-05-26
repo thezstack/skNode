@@ -22,6 +22,21 @@ router.get("/read-sheet", async (req, res) => {
   }
 });
 
+router.get("/build-products", async (req, res) => {
+  try {
+    const spreadsheetId = "12cMgbvqVqMbifb5SqsTqvABobGQ5M9wHfhN-fEgmo7o"; // Replace with your Spreadsheet ID
+    const range = "Ilm Academy Master!A:P"; // Update this to your specific range
+
+    const data = await sheetsService.processSpreadsheet(range, spreadsheetId);
+    res.json(data);
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ message: "An error occurred while reading from Google Sheets" });
+  }
+});
+
 export class SheetsController {
   static async addOrderToSheet(order: Order) {
     return sheetsService.addOrder(order);

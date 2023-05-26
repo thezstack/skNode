@@ -132,8 +132,73 @@ class SheetsService {
             }
         });
     }
-    createCompletedProduct() {
+    processSpreadsheet(range, spreadsheetId) {
         return __awaiter(this, void 0, void 0, function* () {
+            const auth = yield this.getAuth();
+            const sheets = googleapis_1.google.sheets({ version: "v4", auth });
+            // First, read the data from the sheet
+            const data = yield this.readRange(spreadsheetId, range);
+            // Assume the first row is the header row
+            const headers = data[0];
+            const coreSpreadSheetId = "1QETHsfANGwEJG00CR-zkQ6SWi2jSkn2SpuxBrQXhN5U";
+            const coreTargetRange = "CompletedProduct!A2:G";
+            const dataToAppend = [];
+            // Iterate over each column
+            for (let col = 0; col < headers.length; col++) {
+                // Skip columns with null headers
+                if (headers[col] === null) {
+                    continue;
+                }
+                // Iterate over each row in the current column, starting from the second row
+                for (let row = 1; row < data.length; row++) {
+                    // If the cell value is "false", move on to the next column
+                    if (data[row][col] === "false") {
+                        break;
+                    }
+                    // If the cell has a value, create an object that maps the headers to the values in the row
+                    if (data[row][col]) {
+                        const rowObject = {
+                            id: headers[col],
+                            sku: data[row][0],
+                            name: data[row][1],
+                            quantity: data[row][col],
+                        };
+                        console.log(`Processing cell (${row}, ${col}): ${data[row][col]}`);
+                        console.log(`Row object:`, rowObject);
+                        dataToAppend.push(Object.values(rowObject));
+                    }
+                }
+            }
+            // Iterate over each column
+            // for (let col = 0; col < data[0].length; col++) {
+            //   // Iterate over each row in the current column
+            //   for (let row = 0; row < data.length; row++) {
+            //     // If the cell value is "false", move on to the next column
+            //     if (data[row][col] === "FALSE") {
+            //       break;
+            //     }
+            //     // If the cell has a value, do something with it
+            //     if (data[row][col]) {
+            //       // Do something with data[row][col]
+            //       // console.log(`Processing cell (${row}, ${col}): ${data[row][col]}`);
+            //       console.log(`Values in the same row: ${data[row].join(", ")}`);
+            //     }
+            //   }
+            // }
+            try {
+                const response = yield sheets.spreadsheets.values.append({
+                    spreadsheetId: coreSpreadSheetId,
+                    range: coreTargetRange,
+                    valueInputOption: "USER_ENTERED",
+                    insertDataOption: "INSERT_ROWS",
+                    requestBody: { values: dataToAppend },
+                });
+                console.log(response);
+            }
+            catch (error) {
+                console.error("Error posting data:", error);
+                throw error;
+            }
         });
     }
 }
