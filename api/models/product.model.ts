@@ -13,3 +13,10 @@ export interface Variant {
   id: number;
   price: string;
 }
+
+export interface CompletedProduct {
+  product_id: number;
+  sku: string;
+  product_description: string;
+  quantity: number;
+}

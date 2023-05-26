@@ -1,7 +1,7 @@
 import moment from "moment-timezone";
 import { google, sheets_v4, Auth } from "googleapis";
 import { Order } from "../models/order.model";
-import { Product } from "../models/product.model";
+import { Product, CompletedProduct } from "../models/product.model";
 export class SheetsService {
   private auth: Auth.OAuth2Client | null = null;
 
@@ -134,7 +134,6 @@ export class SheetsService {
     const coreTargetRange = "CompletedProduct!A2:G";
 
     const dataToAppend = [];
-    console.log(headers);
     // Iterate over each column
     for (let col = 0; col < headers.length; col++) {
       // Skip columns with null headers
@@ -151,17 +150,17 @@ export class SheetsService {
 
         // If the cell has a value, create an object that maps the headers to the values in the row
         if (data[row][col]) {
-          const rowObject = {
-            id: headers[col],
+          const rowObject: CompletedProduct = {
+            product_id: headers[col],
             sku: data[row][0],
-            name: data[row][1],
+            product_description: data[row][1],
             quantity: data[row][col],
           };
           // Skip rows that don't have a corresponding header
           if (
-            !rowObject.id ||
+            !rowObject.product_id ||
             !rowObject.sku ||
-            !rowObject.name ||
+            !rowObject.product_description ||
             rowObject.sku == "SKU"
           ) {
             continue;
