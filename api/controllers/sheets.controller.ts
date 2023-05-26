@@ -28,7 +28,7 @@ router.get("/build-products", async (req, res) => {
     const range = "HQA Master!A:P"; // Update this to your specific range
 
     const data = await sheetsService.processMultipleRange(spreadsheetId);
-    res.json(data);
+    res.status(200);
   } catch (error) {
     console.error(error);
     res

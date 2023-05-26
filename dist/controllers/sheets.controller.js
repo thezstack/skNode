@@ -37,7 +37,7 @@ router.get("/build-products", (req, res) => __awaiter(void 0, void 0, void 0, fu
         const spreadsheetId = "12cMgbvqVqMbifb5SqsTqvABobGQ5M9wHfhN-fEgmo7o"; // Replace with your Spreadsheet ID
         const range = "HQA Master!A:P"; // Update this to your specific range
         const data = yield sheetsService.processMultipleRange(spreadsheetId);
-        res.json(data);
+        res.status(200);
     }
     catch (error) {
         console.error(error);
