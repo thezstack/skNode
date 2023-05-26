@@ -25,9 +25,9 @@ router.get("/read-sheet", async (req, res) => {
 router.get("/build-products", async (req, res) => {
   try {
     const spreadsheetId = "12cMgbvqVqMbifb5SqsTqvABobGQ5M9wHfhN-fEgmo7o"; // Replace with your Spreadsheet ID
-    const range = "Ilm Academy Master!A:P"; // Update this to your specific range
+    const range = "HQA Master!A:P"; // Update this to your specific range
 
-    const data = await sheetsService.processSpreadsheet(range, spreadsheetId);
+    const data = await sheetsService.processMultipleRange(spreadsheetId);
     res.json(data);
   } catch (error) {
     console.error(error);
