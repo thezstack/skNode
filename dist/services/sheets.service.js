@@ -132,6 +132,10 @@ class SheetsService {
             }
         });
     }
+    createCompletedProduct() {
+        return __awaiter(this, void 0, void 0, function* () {
+        });
+    }
 }
 exports.SheetsService = SheetsService;
 //# sourceMappingURL=sheets.service.js.map

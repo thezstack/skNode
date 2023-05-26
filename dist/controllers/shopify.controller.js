@@ -60,7 +60,7 @@ router.post("/webhooks/orders/create", express_1.default.json(), (req, res) => _
         email: req.body.email,
         created_at: req.body.created_at,
         line_items: req.body.line_items.map((item) => ({
-            id: item.id,
+            id: item.product_id,
             title: item.title,
             quantity: item.quantity,
             price: item.price,

@@ -49,7 +49,7 @@ router.post("/webhooks/orders/create", express.json(), async (req, res) => {
     line_items: req.body.line_items.map(
       (item: any) =>
         ({
-          id: item.id,
+          id: item.product_id,
           title: item.title,
           quantity: item.quantity,
           price: item.price,
