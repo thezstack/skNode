@@ -37,10 +37,34 @@ router.get("/build-products", (req, res) => __awaiter(void 0, void 0, void 0, fu
         const spreadsheetId = "12cMgbvqVqMbifb5SqsTqvABobGQ5M9wHfhN-fEgmo7o"; // Replace with your Spreadsheet ID
         const range = "HQA Master!A:P"; // Update this to your specific range
         const data = yield sheetsService.processMultipleRange(spreadsheetId);
-        res.status(200);
+        res.status(200).json({ message: "success" });
     }
     catch (error) {
         console.error(error);
+        res
+            .status(500)
+            .json({ message: "An error occurred while reading from Google Sheets" });
+    }
+}));
+router.get("/completed-products", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const data = yield sheetsService.updateShopifyProducts();
+        res.status(200);
+    }
+    catch (error) {
+        console.log(error);
+        res
+            .status(500)
+            .json({ message: "An error occurred while reading from Google Sheets" });
+    }
+}));
+router.get("/track-supply-changes", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const data = yield sheetsService.trackSupplyChanges(req.body);
+        res.status(200);
+    }
+    catch (error) {
+        console.log(error);
         res
             .status(500)
             .json({ message: "An error occurred while reading from Google Sheets" });

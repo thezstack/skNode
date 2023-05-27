@@ -206,4 +206,66 @@ export class SheetsService {
       this.processSpreadsheet(range2, spreadsheetId),
     ]);
   }
+  async updateShopifyProducts() {
+    const auth = await this.getAuth();
+    const sheets = google.sheets({ version: "v4", auth });
+    const spreadsheetId = process.env.SHEETS_CORE_ID;
+    const completedProductRange = "CompletedProduct!A2:D528"; // Replace with your actual range
+    const productRange = "Products!A1:E22"; // Replace with your actual range
+
+    const chunkSize = 200;
+    const totalRows = 528;
+    for (let startRow = 2; startRow <= totalRows; startRow = +chunkSize) {
+      const endRow = startRow + chunkSize - 1;
+      const range = `CompletedProduct!A${startRow}:E${endRow}`;
+      const data = await this.readRange(spreadsheetId, range);
+      console.log(data);
+    }
+    // Read data from both sheets
+    const completedProductData = await this.readRange(
+      spreadsheetId,
+      completedProductRange
+    );
+    // console.log(completedProductData);
+    const productData = await this.readRange(spreadsheetId, productRange);
+    //console.log(productData);
+    // Create a map where the keys are the IDs from the Product sheet and the values are the corresponding rows
+    const productMap = productData.reduce((map: any, row: any) => {
+      map[row[row.length - 1]] = row;
+      return map;
+    }, {});
+
+    // Group the rows by ID
+    const groupedRows = completedProductData.reduce((groups: any, row: any) => {
+      const id = row[0];
+      if (!groups[id]) {
+        groups[id] = [];
+      }
+      groups[id].push(row);
+      return groups;
+    }, {});
+    // Iterate over each group
+    for (const id in groupedRows) {
+      // Get the corresponding row from the Product sheet
+      const productRow = productMap[id];
+
+      // If a corresponding row is found, use the first column from the Product sheet as the ID to update your Shopify products
+      if (productRow) {
+        // Create a Product object and set its body_html property
+        const product = {
+          id: productRow[0],
+          body_html: `<ul>${groupedRows[id]
+            .map((row: any) => `<li>${row[2]} ${row[3]}</li>`)
+            .join("")}</ul>`,
+        };
+        // Use the product to update your Shopify products
+        // You might need to call a function here that takes the product as an argument and updates the Shopify products
+        // console.log(`Updating Shopify product:`, product);
+      }
+    }
+  }
+
+  async trackSupplyChanges(data: any) {
+    console.log(data);
+  }
 }
