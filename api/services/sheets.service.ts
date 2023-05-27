@@ -267,5 +267,6 @@ export class SheetsService {
 
   async trackSupplyChanges(data: any) {
     console.log(data);
+    return data;
   }
 }

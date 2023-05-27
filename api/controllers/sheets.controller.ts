@@ -49,10 +49,10 @@ router.get("/completed-products", async (req, res) => {
   }
 });
 
-router.get("/track-supply-changes", async (req, res) => {
+router.post("/track-supply-changes", async (req, res) => {
   try {
     const data = await sheetsService.trackSupplyChanges(req.body);
-    res.status(200);
+    res.status(200).json({ message: "Success" });
   } catch (error) {
     console.log(error);
     res
