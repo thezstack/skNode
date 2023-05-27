@@ -1,12 +1,12 @@
 import { Product } from "../models/product.model";
 import { Order } from "../models/order.model";
 import { SheetsService } from "../services/sheets.service";
-
+import { ShopifyService } from "../services/shopify.service";
 import express from "express";
 
 const router = express.Router();
 const sheetsService = new SheetsService();
-
+const shopifyService = new ShopifyService();
 router.get("/read-sheet", async (req, res) => {
   try {
     const spreadsheetId = process.env.GOOGLE_SPREADSHEET_ID; // Replace with your Spreadsheet ID
@@ -28,6 +28,7 @@ router.get("/build-products", async (req, res) => {
     const range = "HQA Master!A:P"; // Update this to your specific range
 
     const data = await sheetsService.processMultipleRange(spreadsheetId);
+
     res.status(200).json({ message: "success" });
   } catch (error) {
     console.error(error);
@@ -40,6 +41,8 @@ router.get("/build-products", async (req, res) => {
 router.get("/completed-products", async (req, res) => {
   try {
     const data = await sheetsService.updateShopifyProducts();
+    await shopifyService.updateProducts(data);
+
     res.status(200).json({ message: "success" });
   } catch (error) {
     console.log(error);

@@ -14,10 +14,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.sheetsRouter = exports.SheetsController = void 0;
 const sheets_service_1 = require("../services/sheets.service");
+const shopify_service_1 = require("../services/shopify.service");
 const express_1 = __importDefault(require("express"));
 const router = express_1.default.Router();
 exports.sheetsRouter = router;
 const sheetsService = new sheets_service_1.SheetsService();
+const shopifyService = new shopify_service_1.ShopifyService();
 router.get("/read-sheet", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const spreadsheetId = process.env.GOOGLE_SPREADSHEET_ID; // Replace with your Spreadsheet ID
@@ -49,6 +51,7 @@ router.get("/build-products", (req, res) => __awaiter(void 0, void 0, void 0, fu
 router.get("/completed-products", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const data = yield sheetsService.updateShopifyProducts();
+        yield shopifyService.updateProducts(data);
         res.status(200).json({ message: "success" });
     }
     catch (error) {

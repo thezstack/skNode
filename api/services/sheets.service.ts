@@ -212,7 +212,7 @@ export class SheetsService {
     const spreadsheetId = process.env.SHEETS_CORE_ID;
     const completedProductRange = "CompletedProduct!A2:D550"; // Replace with your actual range
     const productRange = "Products!A1:E23"; // Replace with your actual range
-
+    const completedProducts = [];
     // Read data from both sheets
     const completedProductData = await this.readRange(
       spreadsheetId,
@@ -248,14 +248,16 @@ export class SheetsService {
         const product = {
           id: productRow[0],
           body_html: `<ul>${groupedRows[id]
-            .map((row: any) => `<li>${row[2]} ${row[3]}</li>`)
+            .map((row: any) => `<li>${row[2]} <strong>${row[3]}</strong></li>`)
             .join("")}</ul>`,
         };
         // Use the product to update your Shopify products
         // You might need to call a function here that takes the product as an argument and updates the Shopify products
+        completedProducts.push(product);
         console.log(`Updating Shopify product:`, product);
       }
     }
+    return completedProducts;
   }
 
   async trackSupplyChanges(data: any) {
