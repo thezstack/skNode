@@ -210,17 +210,9 @@ export class SheetsService {
     const auth = await this.getAuth();
     const sheets = google.sheets({ version: "v4", auth });
     const spreadsheetId = process.env.SHEETS_CORE_ID;
-    const completedProductRange = "CompletedProduct!A2:D528"; // Replace with your actual range
-    const productRange = "Products!A1:E22"; // Replace with your actual range
+    const completedProductRange = "CompletedProduct!A2:D550"; // Replace with your actual range
+    const productRange = "Products!A1:E23"; // Replace with your actual range
 
-    const chunkSize = 200;
-    const totalRows = 528;
-    for (let startRow = 2; startRow <= totalRows; startRow = +chunkSize) {
-      const endRow = startRow + chunkSize - 1;
-      const range = `CompletedProduct!A${startRow}:E${endRow}`;
-      const data = await this.readRange(spreadsheetId, range);
-      console.log(data);
-    }
     // Read data from both sheets
     const completedProductData = await this.readRange(
       spreadsheetId,
@@ -244,6 +236,7 @@ export class SheetsService {
       groups[id].push(row);
       return groups;
     }, {});
+
     // Iterate over each group
     for (const id in groupedRows) {
       // Get the corresponding row from the Product sheet
@@ -260,13 +253,48 @@ export class SheetsService {
         };
         // Use the product to update your Shopify products
         // You might need to call a function here that takes the product as an argument and updates the Shopify products
-        // console.log(`Updating Shopify product:`, product);
+        console.log(`Updating Shopify product:`, product);
       }
     }
   }
 
   async trackSupplyChanges(data: any) {
+    // Log the received data
     console.log(data);
+
+    // Authenticate with the Google Sheets API
+    const auth = await this.getAuth();
+    const sheets = google.sheets({ version: "v4", auth });
+
+    // Define the ID of the spreadsheet and the range to search
+    const spreadsheetId = process.env.SHEETS_CORE_ID;
+    const range = "CompletedProduct!A2:B536";
+
+    // Get the values in the range
+    const response = await this.readRange(spreadsheetId, range);
+    // Find the row where the first column matches headerValue and the second column matches firstColumnValue
+    const values = response || [];
+    const rowIndex = values.findIndex(
+      (row: any) => row[0] == data.product_id && row[1] == data.sku
+    );
+
+    //const rowIndex = values.findIndex((row: any) => console.log(row[0]));
+
+    console.log(rowIndex);
+    // If a matching row was found, update the fifth column of that row
+    if (rowIndex !== -1) {
+      const updateRange = `CompletedProduct!E${rowIndex + 1}`;
+
+      await sheets.spreadsheets.values.update({
+        spreadsheetId,
+        range: updateRange,
+        valueInputOption: "USER_ENTERED",
+        requestBody: {
+          values: [["true"]],
+        },
+      });
+    }
+
     return data;
   }
 }

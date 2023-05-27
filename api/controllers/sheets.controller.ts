@@ -40,7 +40,7 @@ router.get("/build-products", async (req, res) => {
 router.get("/completed-products", async (req, res) => {
   try {
     const data = await sheetsService.updateShopifyProducts();
-    res.status(200);
+    res.status(200).json({ message: "success" });
   } catch (error) {
     console.log(error);
     res

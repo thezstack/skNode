@@ -49,7 +49,7 @@ router.get("/build-products", (req, res) => __awaiter(void 0, void 0, void 0, fu
 router.get("/completed-products", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const data = yield sheetsService.updateShopifyProducts();
-        res.status(200);
+        res.status(200).json({ message: "success" });
     }
     catch (error) {
         console.log(error);
