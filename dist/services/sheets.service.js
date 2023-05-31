@@ -18,6 +18,60 @@ const googleapis_1 = require("googleapis");
 class SheetsService {
     constructor() {
         this.auth = null;
+        // async updateSpreadsheet(matchedData: any[], spreadsheetId: string, range: string) {
+        //   const auth = await this.getAuth();
+        //   const sheets = google.sheets({ version: "v4", auth });
+        //   // Prepare the data for update
+        //   const values = matchedData.map(data => [data.id, data.columnB, data.columnD, data.count]);
+        //   // Update the spreadsheet
+        //   await sheets.spreadsheets.values.update({
+        //     spreadsheetId,
+        //     range,
+        //     requestBody: {
+        //       values,
+        //     },
+        //     valueInputOption: 'USER_ENTERED',
+        //   });
+        // }
+        // async getCompletedProductsForSheets() {
+        //   const auth = await this.getAuth();
+        //   const sheets = google.sheets({ version: "v4", auth });
+        //   const spreadsheetId = process.env.SHEETS_CORE_ID;
+        //   const completedProductRange = "CompletedProduct!A2:D550";
+        //   const productRange = "Products!A1:E23";
+        //   const ranges = [completedProductRange, productRange];
+        //   const response = await sheets.spreadsheets.values.batchGet({
+        //     spreadsheetId,
+        //     ranges,
+        //   });
+        //   const [completedProductData, productData] = response.data.valueRanges.map(
+        //     (range) => range.values
+        //   );
+        //   const productMap = productData.reduce((map: any, row: any) => {
+        //     map[row[row.length - 1]] = row;
+        //     return map;
+        //   }, {});
+        //   const groupedRows = await this.groupDataById(completedProductData);
+        //   // Now you can use this groupedRows object to write data into your sheets
+        //   // Let's assume each group goes into a different sheet and the sheet's ID is the group's ID
+        //   for (const id in groupedRows) {
+        //     const range = `${id}!A1:E23`; // You need to define the range properly
+        //     const data = groupedRows[id];
+        //     await this.writeToSheet(auth, spreadsheetId, range, data);
+        //   }
+        // }
+        // async writeToSheet(auth: any, spreadsheetId: any, range: any, data: any[]) {
+        //   const sheets = google.sheets({ version: "v4", auth });
+        //   const resource = {
+        //     values: data,
+        //   };
+        //   sheets.spreadsheets.values.update({
+        //     spreadsheetId,
+        //     range,
+        //     resource,
+        //     valueInputOption: 'USER_ENTERED',
+        //   });
+        // }
     }
     getAuth() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -215,7 +269,8 @@ class SheetsService {
             ]);
         });
     }
-    updateShopifyProducts() {
+    //Gets completed Products list for updating shopify products
+    getCompletedProductsForShopify() {
         return __awaiter(this, void 0, void 0, function* () {
             const auth = yield this.getAuth();
             const sheets = googleapis_1.google.sheets({ version: "v4", auth });
@@ -233,6 +288,7 @@ class SheetsService {
                 map[row[row.length - 1]] = row;
                 return map;
             }, {});
+            console.log(productMap);
             // Group the rows by ID
             const groupedRows = completedProductData.reduce((groups, row) => {
                 const id = row[0];
@@ -242,6 +298,7 @@ class SheetsService {
                 groups[id].push(row);
                 return groups;
             }, {});
+            //console.log(groupedRows);
             // Iterate over each group
             for (const id in groupedRows) {
                 // Get the corresponding row from the Product sheet
@@ -294,6 +351,203 @@ class SheetsService {
                 });
             }
             return data;
+        });
+    }
+    createSheets(spreadsheetId, ids) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const auth = yield this.getAuth();
+            const sheets = googleapis_1.google.sheets({ version: "v4", auth: auth });
+            // Prepare the requests to add new sheets
+            const requests = ids.map((id) => ({
+                addSheet: {
+                    properties: {
+                        title: id,
+                    },
+                },
+            }));
+            try {
+                // Make the request to add new sheets
+                const response = yield sheets.spreadsheets.batchUpdate({
+                    spreadsheetId,
+                    requestBody: {
+                        requests,
+                    },
+                });
+                console.log(response.data);
+            }
+            catch (error) {
+                console.error("Error creating sheets:", error);
+                throw error;
+            }
+        });
+    }
+    // async groupDataById(data: any[]) {
+    //   return data.reduce((groups: any, row: any) => {
+    //     const id = row[0];
+    //     if (!groups[id]) {
+    //       groups[id] = [];
+    //     }
+    //     groups[id].push(row);
+    //     return groups;
+    //   }, {});
+    // }
+    /**
+     * getting total product_id.
+     *match those orders and grab all of the supplies related
+     */
+    buildProcurement() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const procurementSheetID = "1925aTPEx32Sk8LuZJFNsAzz29SS7cWS4-G_5X0DNh9o";
+            const prcurementRange = "SuppliesToOrder!D:D";
+            const orderDumpSheet = process.env.GOOGLE_SPREADSHEET_ID;
+            const dumpRange = "Dump!A2:I"; // Assuming data starts from row 2
+            const dumpData = yield this.readRange(orderDumpSheet, dumpRange);
+            //console.log(dumpData);
+            //Create an object with unique ids and their total count
+            const idCountMap = dumpData.reduce((map, row) => {
+                const id = row[8]; // ID is in column I
+                const count = parseInt(row[4]); // Count is in column E
+                if (!isNaN(count)) {
+                    // Check if count is a valid number
+                    if (!map[id]) {
+                        map[id] = 0;
+                    }
+                    map[id] += count;
+                }
+                return map;
+            }, {});
+            this.matchIdsAndGetData(idCountMap);
+            //console.log(idCountMap);
+            // return idCountMap;
+        });
+    }
+    matchIdsAndGetData(idCountMap) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const auth = yield this.getAuth();
+            const sheets = googleapis_1.google.sheets({ version: "v4", auth });
+            const spreadsheetId = "1QETHsfANGwEJG00CR-zkQ6SWi2jSkn2SpuxBrQXhN5U";
+            const completedProductRange = "CompletedProduct!A2:E"; // Assuming data starts from row 2
+            // Read data from "CompletedProduct" sheet
+            const completedProductData = yield this.readRange(spreadsheetId, completedProductRange);
+            // Create an array with required data for each matching ID
+            const matchedData = completedProductData.reduce((arr, row) => {
+                const id = row[4]; // ID is in column E
+                const sku = row[1]; // Value in column B
+                const quantity = row[3] * idCountMap[id]; // Value in column D
+                // If the ID exists in idCountMap, add the required data to the array
+                if (idCountMap[id]) {
+                    const obj = {
+                        id,
+                        sku: sku,
+                        quantity: quantity,
+                    };
+                    arr.push(obj);
+                }
+                return arr;
+            }, []);
+            console.log(matchedData);
+            this.updateDataWithSupplies(matchedData);
+            //return matchedData;
+        });
+    }
+    // async updateDataWithSupplies(matchedData: any[]) {
+    //   const auth = await this.getAuth();
+    //   const sheets = google.sheets({ version: "v4", auth });
+    //   const spreadsheetId = "1925aTPEx32Sk8LuZJFNsAzz29SS7cWS4-G_5X0DNh9o";
+    //   const suppliesRange = "SuppliesToOrder!A2:D"; // Assuming data starts from row 2
+    //   // Read data from "SuppliesToOrder" sheet
+    //   const suppliesData = await this.readRange(spreadsheetId, suppliesRange);
+    //   // Create a map where the keys are the columnB values and the values are the corresponding rows
+    //   const suppliesMap = suppliesData.reduce((map: any, row: any) => {
+    //     const columnB = row[1]; // columnB equivalent is in column D
+    //     if (!map[columnB]) {
+    //       map[columnB] = row;
+    //     }
+    //     return map;
+    //   }, {});
+    //   //console.log(suppliesMap);
+    //   // Update matchedData based on the data from the "SuppliesToOrder" sheet
+    //   matchedData.forEach((data: any) => {
+    //     const suppliesRow = suppliesMap[data.sku];
+    //     if (suppliesRow) {
+    //       const currentValue = parseInt(suppliesRow[3]); // The current value is in column D
+    //       if (!isNaN(currentValue)) {
+    //         data.quantity += currentValue;
+    //       }
+    //     }
+    //   });
+    //   console.log(matchedData);
+    //   // this.updateSupplyQuantities(matchedData);
+    //   // return matchedData;
+    // }
+    updateDataWithSupplies(matchedData) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const auth = yield this.getAuth();
+            const sheets = googleapis_1.google.sheets({ version: "v4", auth });
+            const spreadsheetId = "1925aTPEx32Sk8LuZJFNsAzz29SS7cWS4-G_5X0DNh9o";
+            const suppliesRange = "SuppliesToOrder!A2:D"; // Assuming data starts from row 2
+            // Read data from "SuppliesToOrder" sheet
+            let suppliesData = yield this.readRange(spreadsheetId, suppliesRange);
+            // Convert matchedData to map for easy lookup
+            const matchedDataMap = matchedData.reduce((map, data) => {
+                map[data.sku] = data;
+                return map;
+            }, {});
+            // Update suppliesData based on the data from matchedData
+            suppliesData = suppliesData.map((row) => {
+                const sku = row[1]; // SKU is in column B
+                const matchedDataItem = matchedDataMap[sku];
+                if (matchedDataItem) {
+                    row[3] = matchedDataItem.quantity; // Update column D with quantity from matchedData
+                }
+                return row;
+            });
+            // Update the "SuppliesToOrder" sheet
+            yield sheets.spreadsheets.values.update({
+                spreadsheetId,
+                range: suppliesRange,
+                valueInputOption: "USER_ENTERED",
+                requestBody: {
+                    values: suppliesData,
+                },
+            });
+            console.log(matchedData);
+            return matchedData;
+        });
+    }
+    updateSupplyQuantities(matchedData) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const auth = yield this.getAuth();
+            const sheets = googleapis_1.google.sheets({ version: "v4", auth });
+            const spreadsheetId = "1925aTPEx32Sk8LuZJFNsAzz29SS7cWS4-G_5X0DNh9o";
+            const suppliesRange = "SuppliesToOrder!A2:D"; // Assuming data starts from row 2
+            // Read data from "SuppliesToOrder" sheet
+            let suppliesData = yield this.readRange(spreadsheetId, suppliesRange);
+            // Convert matchedData to map for easy lookup
+            const matchedDataMap = matchedData.reduce((map, data) => {
+                map[data.id] = data;
+                return map;
+            }, {});
+            console.log(matchedDataMap);
+            // Update suppliesData based on the data from matchedData
+            suppliesData = suppliesData.map((row) => {
+                const id = row[1]; // ID is in column B
+                const matchedDataItem = matchedDataMap[id];
+                if (matchedDataItem) {
+                    row[3] = matchedDataItem.quantity; // Update column D with quantity from matchedData
+                }
+                return row;
+            });
+            console.log("suppliesData", suppliesData[0]);
+            // Update the "SuppliesToOrder" sheet
+            yield sheets.spreadsheets.values.update({
+                spreadsheetId,
+                range: suppliesRange,
+                valueInputOption: "USER_ENTERED",
+                requestBody: {
+                    values: suppliesData,
+                },
+            });
         });
     }
 }

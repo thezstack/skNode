@@ -50,8 +50,9 @@ router.get("/build-products", (req, res) => __awaiter(void 0, void 0, void 0, fu
 }));
 router.get("/completed-products", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const data = yield sheetsService.updateShopifyProducts();
-        yield shopifyService.updateProducts(data);
+        const data = yield sheetsService.getCompletedProductsForShopify();
+        console.log(data);
+        //   await shopifyService.updateProducts(data);
         res.status(200).json({ message: "success" });
     }
     catch (error) {
@@ -61,18 +62,27 @@ router.get("/completed-products", (req, res) => __awaiter(void 0, void 0, void 0
             .json({ message: "An error occurred while reading from Google Sheets" });
     }
 }));
-router.post("/track-supply-changes", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const data = yield sheetsService.trackSupplyChanges(req.body);
-        res.status(200).json({ message: "Success" });
-    }
-    catch (error) {
-        console.log(error);
-        res
-            .status(500)
-            .json({ message: "An error occurred while reading from Google Sheets" });
-    }
+router.post("/build-completed-sheets", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    //console.log(req);
+    yield sheetsService.createSheets(req.body.spreadsheet_id, req.body.id);
+    res.status(200).json({ message: "Success" });
 }));
+router.get("/build-procurement", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    //console.log(req);
+    yield sheetsService.buildProcurement();
+    res.status(200).json({ message: "Success" });
+}));
+// router.post("/track-supply-changes", async (req, res) => {
+//   try {
+//     const data = await sheetsService.trackSupplyChanges(req.body);
+//     res.status(200).json({ message: "Success" });
+//   } catch (error) {
+//     console.log(error);
+//     res
+//       .status(500)
+//       .json({ message: "An error occurred while reading from Google Sheets" });
+//   }
+// });
 class SheetsController {
     static addOrderToSheet(order) {
         return __awaiter(this, void 0, void 0, function* () {
