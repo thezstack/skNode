@@ -16,9 +16,11 @@ exports.shopifyRouter = void 0;
 const express_1 = __importDefault(require("express"));
 const shopify_service_1 = require("../services/shopify.service");
 const sheets_controller_1 = require("./sheets.controller");
+const sheets_service_1 = require("../services/sheets.service");
 const router = express_1.default.Router();
 exports.shopifyRouter = router;
 const shopifyService = new shopify_service_1.ShopifyService();
+const sheetsService = new sheets_service_1.SheetsService();
 router.get("/products", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const products = yield shopifyService.fetchProducts();
@@ -81,6 +83,7 @@ router.post("/webhooks/orders/create", express_1.default.json(), (req, res) => _
     try {
         yield sheets_controller_1.SheetsController.addOrderToSheet(order);
         // Respond to Shopify to acknowledge receipt of the webhook
+        yield sheetsService.buildProcurement();
         res.status(200).end();
     }
     catch (error) {

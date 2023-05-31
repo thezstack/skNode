@@ -3,10 +3,11 @@ import { ShopifyService } from "../services/shopify.service";
 import { Order, LineItem, Customer } from "../models/order.model";
 import { Product } from "../models/product.model";
 import { SheetsController } from "./sheets.controller";
+import { SheetsService } from "../services/sheets.service";
 
 const router = express.Router();
 const shopifyService = new ShopifyService();
-
+const sheetsService = new SheetsService();
 router.get("/products", async (req, res) => {
   try {
     const products: Product[] = await shopifyService.fetchProducts();
@@ -72,6 +73,7 @@ router.post("/webhooks/orders/create", express.json(), async (req, res) => {
   try {
     await SheetsController.addOrderToSheet(order);
     // Respond to Shopify to acknowledge receipt of the webhook
+    await sheetsService.buildProcurement();
     res.status(200).end();
   } catch (error) {
     console.error(error);
