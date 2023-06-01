@@ -18,6 +18,40 @@ const googleapis_1 = require("googleapis");
 class SheetsService {
     constructor() {
         this.auth = null;
+        // async updateSupplyQuantities(matchedData: any[]) {
+        //   const auth = await this.getAuth();
+        //   const sheets = google.sheets({ version: "v4", auth });
+        //   const spreadsheetId = "1925aTPEx32Sk8LuZJFNsAzz29SS7cWS4-G_5X0DNh9o";
+        //   const suppliesRange = "SuppliesToOrder!A2:D"; // Assuming data starts from row 2
+        //   // Read data from "SuppliesToOrder" sheet
+        //   let suppliesData = await this.readRange(spreadsheetId, suppliesRange);
+        //   console.log(suppliesData);
+        //   // Convert matchedData to map for easy lookup
+        //   const matchedDataMap = matchedData.reduce((map: any, data: any) => {
+        //     map[data.id] = data;
+        //     return map;
+        //   }, {});
+        //   // console.log(matchedDataMap);
+        //   // Update suppliesData based on the data from matchedData
+        //   suppliesData = suppliesData.map((row: any[]) => {
+        //     const id = row[1]; // ID is in column B
+        //     const matchedDataItem = matchedDataMap[id];
+        //     if (matchedDataItem) {
+        //       row[3] = matchedDataItem.quantity; // Update column D with quantity from matchedData
+        //     }
+        //     return row;
+        //   });
+        //   console.log("suppliesData", suppliesData[0]);
+        //   // Update the "SuppliesToOrder" sheet
+        //   await sheets.spreadsheets.values.update({
+        //     spreadsheetId,
+        //     range: suppliesRange,
+        //     valueInputOption: "USER_ENTERED",
+        //     requestBody: {
+        //       values: suppliesData,
+        //     },
+        //   });
+        // }
         // async updateSpreadsheet(matchedData: any[], spreadsheetId: string, range: string) {
         //   const auth = await this.getAuth();
         //   const sheets = google.sheets({ version: "v4", auth });
@@ -394,6 +428,14 @@ class SheetsService {
     /**
      * getting total product_id.
      *match those orders and grab all of the supplies related
+     returns {
+    '632910392': 3,
+    '3850455973952': 4,
+    '3391572869184': 1,
+    '3391581814848': 2,
+    '3820506415168': 1,
+    '3852072091712': 1
+  }
      */
     buildProcurement() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -416,11 +458,13 @@ class SheetsService {
                 }
                 return map;
             }, {});
-            this.matchIdsAndGetData(idCountMap);
+            console.log(idCountMap);
+            yield this.matchIdsAndGetData(idCountMap);
             //console.log(idCountMap);
             // return idCountMap;
         });
     }
+    //match total orders with completed supply list
     matchIdsAndGetData(idCountMap) {
         return __awaiter(this, void 0, void 0, function* () {
             const auth = yield this.getAuth();
@@ -445,8 +489,8 @@ class SheetsService {
                 }
                 return arr;
             }, []);
-            console.log(matchedData);
-            this.updateDataWithSupplies(matchedData);
+            console.log("matchedData", matchedData[0]);
+            yield this.updateDataWithSupplies(matchedData);
             //return matchedData;
         });
     }
@@ -488,20 +532,36 @@ class SheetsService {
             const suppliesRange = "SuppliesToOrder!A2:D"; // Assuming data starts from row 2
             // Read data from "SuppliesToOrder" sheet
             let suppliesData = yield this.readRange(spreadsheetId, suppliesRange);
+            // // Convert matchedData to map for easy lookup
+            // const matchedDataMap = matchedData.reduce((map: any, data: any) => {
+            //   // console.log(data);
+            //   map[data.sku] = data;
+            //   return map;
+            // }, {});
             // Convert matchedData to map for easy lookup
             const matchedDataMap = matchedData.reduce((map, data) => {
-                map[data.sku] = data;
+                // If this SKU already exists in the map, accumulate the quantity
+                if (map[data.sku]) {
+                    map[data.sku].quantity += data.quantity;
+                }
+                else {
+                    // else, add a new entry to the map
+                    map[data.sku] = data;
+                }
                 return map;
             }, {});
             // Update suppliesData based on the data from matchedData
             suppliesData = suppliesData.map((row) => {
                 const sku = row[1]; // SKU is in column B
+                //  console.log(sku);
                 const matchedDataItem = matchedDataMap[sku];
                 if (matchedDataItem) {
+                    // console.log(matchedDataItem);
                     row[3] = matchedDataItem.quantity; // Update column D with quantity from matchedData
                 }
                 return row;
             });
+            //   console.log(suppliesData[3]);
             // Update the "SuppliesToOrder" sheet
             yield sheets.spreadsheets.values.update({
                 spreadsheetId,
@@ -511,43 +571,7 @@ class SheetsService {
                     values: suppliesData,
                 },
             });
-            console.log(matchedData);
-            return matchedData;
-        });
-    }
-    updateSupplyQuantities(matchedData) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const auth = yield this.getAuth();
-            const sheets = googleapis_1.google.sheets({ version: "v4", auth });
-            const spreadsheetId = "1925aTPEx32Sk8LuZJFNsAzz29SS7cWS4-G_5X0DNh9o";
-            const suppliesRange = "SuppliesToOrder!A2:D"; // Assuming data starts from row 2
-            // Read data from "SuppliesToOrder" sheet
-            let suppliesData = yield this.readRange(spreadsheetId, suppliesRange);
-            // Convert matchedData to map for easy lookup
-            const matchedDataMap = matchedData.reduce((map, data) => {
-                map[data.id] = data;
-                return map;
-            }, {});
-            console.log(matchedDataMap);
-            // Update suppliesData based on the data from matchedData
-            suppliesData = suppliesData.map((row) => {
-                const id = row[1]; // ID is in column B
-                const matchedDataItem = matchedDataMap[id];
-                if (matchedDataItem) {
-                    row[3] = matchedDataItem.quantity; // Update column D with quantity from matchedData
-                }
-                return row;
-            });
-            console.log("suppliesData", suppliesData[0]);
-            // Update the "SuppliesToOrder" sheet
-            yield sheets.spreadsheets.values.update({
-                spreadsheetId,
-                range: suppliesRange,
-                valueInputOption: "USER_ENTERED",
-                requestBody: {
-                    values: suppliesData,
-                },
-            });
+            //return matchedData;
         });
     }
 }
