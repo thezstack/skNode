@@ -52,7 +52,7 @@ router.get("/completed-products", (req, res) => __awaiter(void 0, void 0, void 0
     try {
         const data = yield sheetsService.getCompletedProductsForShopify();
         console.log(data);
-        //   await shopifyService.updateProducts(data);
+        yield shopifyService.updateProducts(data);
         res.status(200).json({ message: "success" });
     }
     catch (error) {

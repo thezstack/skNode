@@ -43,7 +43,7 @@ router.get("/completed-products", async (req, res) => {
   try {
     const data = await sheetsService.getCompletedProductsForShopify();
     console.log(data);
-    //   await shopifyService.updateProducts(data);
+    await shopifyService.updateProducts(data);
 
     res.status(200).json({ message: "success" });
   } catch (error) {

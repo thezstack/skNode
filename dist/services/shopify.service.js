@@ -28,7 +28,7 @@ class ShopifyService {
                 "status",
                 "variants",
             ].join(",");
-            const url = `${process.env.SHOP_URL}/admin/api/2023-04/products.json?fields=${fields}&status=draft`;
+            const url = `${process.env.SHOP_URL}/admin/api/2023-04/products.json?fields=${fields}&status=active`;
             const headers = {
                 "Content-Type": "application/json",
                 "X-Shopify-Access-Token": process.env.SHOP_ACCESS_TOKEN,
